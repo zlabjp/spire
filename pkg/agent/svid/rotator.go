@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/andres-erbsen/clock"
 	observer "github.com/imkira/go-observer"
 	"github.com/spiffe/spire/pkg/agent/client"
-	"github.com/andres-erbsen/clock"
 	"github.com/spiffe/spire/pkg/common/telemetry"
-	"github.com/spiffe/spire/pkg/common/util"
 	"github.com/spiffe/spire/proto/agent/keymanager"
 	"github.com/spiffe/spire/proto/api/node"
+	"github.com/zlabjp/spire/pkg/common/util"
 )
 
 type Rotator interface {
