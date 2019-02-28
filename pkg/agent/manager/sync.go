@@ -6,12 +6,13 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"crypto/x509/pkix"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/spiffe/go-spiffe/uri"
 	"github.com/spiffe/spire/pkg/agent/manager/cache"
 	"github.com/spiffe/spire/pkg/common/bundleutil"
 	"github.com/spiffe/spire/pkg/common/telemetry"
-	"github.com/spiffe/spire/pkg/common/util"
 	"github.com/spiffe/spire/proto/api/node"
 	"github.com/spiffe/spire/proto/common"
 	"github.com/zeebo/errs"
@@ -193,7 +194,7 @@ func (m *manager) newCSR(spiffeID string) (pk *ecdsa.PrivateKey, csr []byte, err
 	if err != nil {
 		return
 	}
-	csr, err = util.MakeCSR(pk, spiffeID)
+	csr, err = makeCSR(pk, spiffeID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -237,4 +238,34 @@ func parseBundles(bundles map[string]*common.Bundle) (map[string]*cache.Bundle, 
 		out[bundle.TrustDomainID()] = bundle
 	}
 	return out, nil
+}
+
+// Temporary Patch
+func makeCSR(privateKey interface{}, spiffeId string) (csr []byte, err error) {
+	uriSANs, err := uri.MarshalUriSANs([]string{spiffeId})
+	if err != nil {
+		return csr, err
+	}
+
+	uriSANExtension := []pkix.Extension{{
+		Id:       uri.OidExtensionSubjectAltName,
+		Value:    uriSANs,
+		Critical: true,
+	}}
+
+	template := &x509.CertificateRequest{
+		Subject: pkix.Name{
+			CommonName:   "SPIRE-Workload",
+			Country:      []string{"US"},
+			Organization: []string{"SPIRE"},
+		},
+		SignatureAlgorithm: x509.ECDSAWithSHA256,
+		ExtraExtensions:    uriSANExtension,
+	}
+
+	csr, err = x509.CreateCertificateRequest(rand.Reader, template, privateKey)
+	if err != nil {
+		return csr, err
+	}
+	return
 }
