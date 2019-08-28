@@ -15,6 +15,7 @@ const (
 	defaultCaCertPath = "cacert.pem"
 )
 
+// TODO: Add docs related to `svid_dns_name_annotation` param
 type Config struct {
 	LogFormat                      string `hcl:"log_format"`
 	LogLevel                       string `hcl:"log_level"`
@@ -29,6 +30,7 @@ type Config struct {
 	Cluster                        string `hcl:"cluster"`
 	PodLabel                       string `hcl:"pod_label"`
 	PodAnnotation                  string `hcl:"pod_annotation"`
+	DnsNameAnnotation              string `hcl:"dns_name_annotation"`
 }
 
 func LoadConfig(path string) (*Config, error) {

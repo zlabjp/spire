@@ -44,12 +44,13 @@ func run(ctx context.Context, configPath string) error {
 	defer serverConn.Close()
 
 	controller := NewController(ControllerConfig{
-		Log:           log,
-		R:             registration.NewRegistrationClient(serverConn),
-		TrustDomain:   config.TrustDomain,
-		Cluster:       config.Cluster,
-		PodLabel:      config.PodLabel,
-		PodAnnotation: config.PodAnnotation,
+		Log:               log,
+		R:                 registration.NewRegistrationClient(serverConn),
+		TrustDomain:       config.TrustDomain,
+		Cluster:           config.Cluster,
+		PodLabel:          config.PodLabel,
+		PodAnnotation:     config.PodAnnotation,
+		DnsNameAnnotation: config.DnsNameAnnotation,
 	})
 
 	log.Info("Initializing registrar")

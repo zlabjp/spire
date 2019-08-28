@@ -21,12 +21,13 @@ import (
 )
 
 type ControllerConfig struct {
-	Log           logrus.FieldLogger
-	R             registration.RegistrationClient
-	TrustDomain   string
-	Cluster       string
-	PodLabel      string
-	PodAnnotation string
+	Log               logrus.FieldLogger
+	R                 registration.RegistrationClient
+	TrustDomain       string
+	Cluster           string
+	PodLabel          string
+	PodAnnotation     string
+	DnsNameAnnotation string
 }
 
 type Controller struct {
@@ -105,12 +106,17 @@ func (c *Controller) reviewAdmission(ctx context.Context, req *admv1beta1.Admiss
 }
 
 func (c *Controller) createPodEntry(ctx context.Context, pod *corev1.Pod) error {
+	dnsName := ""
+	if pod.Annotations[c.c.DnsNameAnnotation] != "" {
+		dnsName = pod.Annotations[c.c.DnsNameAnnotation]
+	}
+
 	if c.c.PodLabel != "" {
 		// the controller has been configured with a pod label. if the pod
 		// has that label, use the value to construct the pod entry. otherwise
 		// ignore the pod altogether.
 		if labelValue, ok := pod.Labels[c.c.PodLabel]; ok {
-			return c.createPodEntryByLabel(ctx, pod, c.c.PodLabel, labelValue)
+			return c.createPodEntryByLabel(ctx, pod, c.c.PodLabel, labelValue, dnsName)
 		}
 		return nil
 	}
@@ -120,17 +126,17 @@ func (c *Controller) createPodEntry(ctx context.Context, pod *corev1.Pod) error 
 		// has that annotation, use the value to construct the pod entry. otherwise
 		// ignore the pod altogether.
 		if annotationValue, ok := pod.Annotations[c.c.PodAnnotation]; ok {
-			return c.createPodEntryByAnnotation(ctx, pod, c.c.PodAnnotation, annotationValue)
+			return c.createPodEntryByAnnotation(ctx, pod, c.c.PodAnnotation, annotationValue, dnsName)
 		}
 		return nil
 	}
 
 	// the controller has not been configured with a pod label or a pod annotation.
 	// create an entry based on the service account.
-	return c.createPodEntryByServiceAccount(ctx, pod)
+	return c.createPodEntryByServiceAccount(ctx, pod, dnsName)
 }
 
-func (c *Controller) createPodEntryByLabel(ctx context.Context, pod *corev1.Pod, labelKey, labelValue string) error {
+func (c *Controller) createPodEntryByLabel(ctx context.Context, pod *corev1.Pod, labelKey, labelValue, dnsName string) error {
 	return c.createEntry(ctx, &common.RegistrationEntry{
 		ParentId: c.nodeID(),
 		SpiffeId: c.makeID("%s", labelValue),
@@ -138,10 +144,11 @@ func (c *Controller) createPodEntryByLabel(ctx context.Context, pod *corev1.Pod,
 			namespaceSelector(pod.Namespace),
 			podNameSelector(pod.Name),
 		},
+		DnsNames: []string{dnsName},
 	})
 }
 
-func (c *Controller) createPodEntryByAnnotation(ctx context.Context, pod *corev1.Pod, annotationKey, annotationValue string) error {
+func (c *Controller) createPodEntryByAnnotation(ctx context.Context, pod *corev1.Pod, annotationKey, annotationValue, dnsName string) error {
 	return c.createEntry(ctx, &common.RegistrationEntry{
 		ParentId: c.nodeID(),
 		SpiffeId: c.makeID("%s", annotationValue),
@@ -149,10 +156,11 @@ func (c *Controller) createPodEntryByAnnotation(ctx context.Context, pod *corev1
 			namespaceSelector(pod.Namespace),
 			podNameSelector(pod.Name),
 		},
+		DnsNames: []string{dnsName},
 	})
 }
 
-func (c *Controller) createPodEntryByServiceAccount(ctx context.Context, pod *corev1.Pod) error {
+func (c *Controller) createPodEntryByServiceAccount(ctx context.Context, pod *corev1.Pod, dnsName string) error {
 	return c.createEntry(ctx, &common.RegistrationEntry{
 		ParentId: c.nodeID(),
 		SpiffeId: c.makeID("ns/%s/sa/%s", pod.Namespace, pod.Spec.ServiceAccountName),
@@ -160,6 +168,7 @@ func (c *Controller) createPodEntryByServiceAccount(ctx context.Context, pod *co
 			namespaceSelector(pod.Namespace),
 			podNameSelector(pod.Name),
 		},
+		DnsNames: []string{dnsName},
 	})
 }
 

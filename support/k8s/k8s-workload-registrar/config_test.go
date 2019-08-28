@@ -84,6 +84,7 @@ func TestParseConfig(t *testing.T) {
 				trust_domain = "TRUSTDOMAINOVERRIDE"
 				cluster = "CLUSTEROVERRIDE"
 				pod_label = "PODLABEL"
+				dns_name_annotation = "DNSNAMEANNOTATION"
 			`,
 			out: &Config{
 				LogLevel:                       "LEVELOVERRIDE",
@@ -97,6 +98,7 @@ func TestParseConfig(t *testing.T) {
 				TrustDomain:                    "TRUSTDOMAINOVERRIDE",
 				Cluster:                        "CLUSTEROVERRIDE",
 				PodLabel:                       "PODLABEL",
+				DnsNameAnnotation:              "DNSNAMEANNOTATION",
 			},
 		},
 		{
