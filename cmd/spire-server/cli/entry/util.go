@@ -84,6 +84,8 @@ func printEntry(e *common.RegistrationEntry) {
 		fmt.Printf("Admin         : %t\n", e.Admin)
 	}
 
+	fmt.Printf("Default       : %t\n", e.Default)
+
 	fmt.Println()
 }
 

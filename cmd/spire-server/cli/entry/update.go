@@ -46,6 +46,9 @@ type UpdateConfig struct {
 
 	// DNSNames entries for SVIDs based on this entry
 	DNSNames StringsFlag
+
+	// Whether or not the SVID based on this entry is the default SVID
+	Default bool
 }
 
 // Validate performs basic validation, even on fields that we
@@ -160,6 +163,7 @@ func (c UpdateCLI) parseConfig(config *UpdateConfig) ([]*common.RegistrationEntr
 		Downstream:  config.Downstream,
 		EntryExpiry: config.EntryExpiry,
 		DnsNames:    config.DNSNames,
+		Default:     config.Default,
 	}
 
 	selectors := []*common.Selector{}
@@ -230,6 +234,8 @@ func (UpdateCLI) newConfig(args []string) (*UpdateConfig, error) {
 	f.Int64Var(&c.EntryExpiry, "entryExpiry", 0, "An expiry, from epoch in seconds, for the resulting registration entry to be pruned")
 
 	f.Var(&c.DNSNames, "dns", "A DNS name that will be included in SVIDs issued based on this entry, where appropriate. Can be used more than once")
+
+	f.BoolVar(&c.Default, "default", false, "If set, X.509-SVID issued based on this entry behaves as default SVID. The SPIFFE workload API returns the default SVID first in the case where multiple SVIDs are issued to a workload")
 
 	return c, f.Parse(args)
 }

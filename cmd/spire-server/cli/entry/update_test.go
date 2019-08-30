@@ -35,6 +35,7 @@ func TestUpdateCLI(t *testing.T) {
 		"-dns", "ung1000",
 		"-dns", "aa2000",
 		"-dns", "zz2000",
+		"-default",
 	})
 	require.NoError(t, err)
 
@@ -48,6 +49,7 @@ func TestUpdateCLI(t *testing.T) {
 		Admin:               true,
 		EntryExpiry:         1552410266,
 		DNSNames:            StringsFlag{"unu1000", "ung1000", "aa2000", "zz2000"},
+		Default:             true,
 	}
 
 	assert.Equal(t, updatedConfig, c)
@@ -63,6 +65,7 @@ func TestUpdateParseConfig(t *testing.T) {
 		FederatesWith:       StringsFlag{"spiffe://domain1.test", "spiffe://domain2.test"},
 		Admin:               true,
 		EntryExpiry:         1552410266,
+		Default:             true,
 	}
 
 	entries, err := UpdateCLI{}.parseConfig(c)
@@ -82,6 +85,7 @@ func TestUpdateParseConfig(t *testing.T) {
 		},
 		Admin:       true,
 		EntryExpiry: 1552410266,
+		Default:     true,
 	}
 
 	expectedEntries := []*common.RegistrationEntry{expectedEntry}
