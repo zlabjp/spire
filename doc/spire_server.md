@@ -172,6 +172,7 @@ Creates registration entries.
 | `-selector`      | A colon-delimited type:value selector used for attestation. This parameter can be used more than once, to specify multiple selectors that must be satisfied. | |
 | `-spiffeID`      | The SPIFFE ID that this record represents and will be set to the SVID issued. | |
 | `-ttl`           | A TTL, in seconds, for any SVID issued as a result of this record.     | 3600           |
+| `-default`       | If set, X.509-SVID issued based on this entry behaves as default SVID. The SPIFFE workload API returns the default SVID first in the case where multiple SVIDs are issued to a workload. | |
 
 ### `spire-server entry update`
 
@@ -191,6 +192,7 @@ Updates registration entries.
 | `-selector`      | A colon-delimited type:value selector used for attestation. This parameter can be used more than once, to specify multiple selectors that must be satisfied. | |
 | `-spiffeID`      | The SPIFFE ID that this record represents and will be set to the SVID issued. | |
 | `-ttl`           | A TTL, in seconds, for any SVID issued as a result of this record.     | 3600           |
+| `-default`       | If set, X.509-SVID issued based on this entry behaves as default SVID. The SPIFFE workload API returns the default SVID first in the case where multiple SVIDs are issued to a workload. | |
 
 ### `spire-server entry delete`
 
