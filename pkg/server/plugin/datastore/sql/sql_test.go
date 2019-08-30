@@ -977,6 +977,7 @@ func (s *PluginSuite) TestFetchRegistrationEntries() {
 		ParentId:   "spiffe://example.org/bat",
 		Ttl:        2,
 		Downstream: true,
+		Default:    true,
 	})
 
 	expectedCallCounter := ds_telemetry.StartListRegistrationCall(s.expectedMetrics)
@@ -1211,6 +1212,7 @@ func (s *PluginSuite) TestUpdateRegistrationEntry() {
 	entry.Ttl = 2
 	entry.Admin = true
 	entry.Downstream = true
+	entry.Default = true
 
 	expectedCallCounter := ds_telemetry.StartUpdateRegistrationCall(s.expectedMetrics)
 	updateRegistrationEntryResponse, err := s.ds.UpdateRegistrationEntry(ctx, &datastore.UpdateRegistrationEntryRequest{
@@ -1846,6 +1848,23 @@ func (s *PluginSuite) TestMigration() {
 			})
 			s.Require().NoError(err)
 			s.Require().True(db.Dialect().HasIndex("registered_entries", "idx_registered_entries_expiry"))
+		case 10:
+			// ensure implementation of new default field
+			resp, err := s.ds.ListRegistrationEntries(context.Background(), &datastore.ListRegistrationEntriesRequest{})
+			s.Require().NoError(err)
+			s.Require().Len(resp.Entries, 1)
+			s.Require().Empty(resp.Entries[0].Default)
+
+			resp.Entries[0].Default = true
+			_, err = s.ds.UpdateRegistrationEntry(context.Background(), &datastore.UpdateRegistrationEntryRequest{
+				Entry: resp.Entries[0],
+			})
+			s.Require().NoError(err)
+
+			resp, err = s.ds.ListRegistrationEntries(context.Background(), &datastore.ListRegistrationEntriesRequest{})
+			s.Require().NoError(err)
+			s.Require().Len(resp.Entries, 1)
+			s.Require().Equal(true, resp.Entries[0].Default)
 		default:
 			s.T().Fatalf("no migration test added for version %d", i)
 		}

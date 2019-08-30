@@ -14,7 +14,7 @@ import (
 
 const (
 	// version of the database in the code
-	codeVersion = 10
+	codeVersion = 11
 )
 
 func migrateDB(db *gorm.DB, dbType string, log hclog.Logger) (err error) {
@@ -140,6 +140,8 @@ func migrateVersion(tx *gorm.DB, version int, log hclog.Logger) (versionOut int,
 		err = migrateToV9(tx)
 	case 9:
 		err = migrateToV10(tx)
+	case 10:
+		err = migrateToV11(tx)
 	default:
 		err = sqlError.New("no migration support for version %d", version)
 	}
@@ -336,6 +338,13 @@ func migrateToV9(tx *gorm.DB) error {
 }
 
 func migrateToV10(tx *gorm.DB) error {
+	if err := tx.AutoMigrate(&V10RegisteredEntry{}).Error; err != nil {
+		return sqlError.Wrap(err)
+	}
+	return nil
+}
+
+func migrateToV11(tx *gorm.DB) error {
 	if err := tx.AutoMigrate(&RegisteredEntry{}).Error; err != nil {
 		return sqlError.Wrap(err)
 	}
@@ -493,6 +502,31 @@ type V9RegisteredEntry struct {
 func (V9RegisteredEntry) TableName() string {
 	return "registered_entries"
 }
+
+type V10RegisteredEntry struct {
+	Model
+
+	EntryID  string `gorm:"unique_index"`
+	SpiffeID string `gorm:"index"`
+	ParentID string `gorm:"index"`
+	// TTL of identities derived from this entry
+	TTL           int32
+	Selectors     []Selector
+	FederatesWith []Bundle `gorm:"many2many:federated_registration_entries;"`
+	Admin         bool
+	Downstream    bool
+	// (optional) expiry of this entry
+	Expiry int64 `gorm:"index"`
+	// (optional) DNS entries
+	DNSList []DNSName
+}
+
+// TableName gets table name for v10 registered entry
+func (V10RegisteredEntry) TableName() string {
+	return "registered_entries"
+}
+
+// In V11RegisteredEntry struct, a default column will be added
 
 type V8Selector struct {
 	Model

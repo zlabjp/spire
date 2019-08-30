@@ -1077,6 +1077,7 @@ func createRegistrationEntry(tx *gorm.DB,
 		Admin:      req.Entry.Admin,
 		Downstream: req.Entry.Downstream,
 		Expiry:     req.Entry.EntryExpiry,
+		Default:    req.Entry.Default,
 	}
 
 	if err := tx.Create(&newRegisteredEntry).Error; err != nil {
@@ -1349,6 +1350,7 @@ func updateRegistrationEntry(tx *gorm.DB,
 	entry.Downstream = req.Entry.Downstream
 	entry.Expiry = req.Entry.EntryExpiry
 	entry.DNSList = dnsList
+	entry.Default = req.Entry.Default
 	if err := tx.Save(&entry).Error; err != nil {
 		return nil, sqlError.Wrap(err)
 	}
@@ -1590,6 +1592,7 @@ func modelToEntry(tx *gorm.DB, model RegisteredEntry) (*common.RegistrationEntry
 		Downstream:    model.Downstream,
 		EntryExpiry:   model.Expiry,
 		DnsNames:      dnsList,
+		Default:       model.Default,
 	}, nil
 }
 

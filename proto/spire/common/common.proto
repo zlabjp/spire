@@ -72,6 +72,8 @@ message RegistrationEntry {
     int64 entryExpiry = 9;
     /** DNS entries */
     repeated string dns_names = 10;
+    /** Whether or not the SVID based on this entry is the default SVID */
+    bool default = 11;
 }
 
 /** A list of registration entries. */

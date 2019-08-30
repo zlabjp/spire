@@ -68,6 +68,8 @@ type RegisteredEntry struct {
 	Expiry int64 `gorm:"index"`
 	// (optional) DNS entries
 	DNSList []DNSName
+	// (optional) Whether or not the SVID based on this entry is the default SVID
+	Default bool
 }
 
 // JoinToken holds a join token
