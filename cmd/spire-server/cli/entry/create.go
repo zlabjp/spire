@@ -133,16 +133,16 @@ func (c CreateCLI) Run(args []string) int {
 		return 1
 	}
 
-	var entries []*common.RegistrationEntry
-	if config.Path != "" {
-		entries, err = c.parseFile(config.Path)
-	} else {
-		entries, err = c.parseConfig(config)
-	}
-	if err != nil {
-		fmt.Println(err.Error())
-		return 1
-	}
+	// var entries []*common.RegistrationEntry
+	// if config.Path != "" {
+	// 	entries, err = c.parseFile(config.Path)
+	// } else {
+	// 	entries, err = c.parseConfig(config)
+	// }
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	return 1
+	// }
 
 	cl, err := util.NewRegistrationClient(config.RegistrationUDSPath)
 	if err != nil {
@@ -150,10 +150,26 @@ func (c CreateCLI) Run(args []string) int {
 		return 1
 	}
 
-	err = c.registerEntries(ctx, cl, entries)
-	if err != nil {
-		fmt.Println(err.Error())
-		return 1
+	// err = c.registerEntries(ctx, cl, entries)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	return 1
+	// }
+
+	for _, s := range config.Selectors {
+		fmt.Println(s.Type)
+		fmt.Println(s.Value)
+	}
+
+	if config.Default {
+		allEntries, err := c.fetchAllEntries(ctx, cl)
+		if err != nil {
+			fmt.Println(err.Error())
+			return 1
+		}
+		for _, e := range allEntries {
+			fmt.Println(e.Default)
+		}
 	}
 
 	return 0
@@ -226,6 +242,16 @@ func (CreateCLI) registerEntries(ctx context.Context, c registration.Registratio
 	}
 
 	return nil
+}
+
+func (CreateCLI) fetchAllEntries(ctx context.Context, c registration.RegistrationClient) ([]*common.RegistrationEntry, error) {
+	var err error
+	e, err := c.FetchEntries(ctx, &common.Empty{})
+	if err != nil {
+		return nil, err
+	}
+
+	return e.Entries, nil
 }
 
 func (CreateCLI) newConfig(args []string) (*CreateConfig, error) {
